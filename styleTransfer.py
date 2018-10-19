@@ -59,6 +59,7 @@ def image_loader(image_name):
     image = Image.open(image_name)
     # fake batch dimension required to fit network's input dimensions
     image = loader(image).unsqueeze(0)
+
     return image.to(device, torch.float)
 
 
@@ -73,7 +74,7 @@ print(style_img.size(),content_img.size())
 
 
 
-assert style_img.size() == content_img.size()
+# assert style_img.size() == content_img.size()
 
 
 
@@ -255,7 +256,8 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     print('Optimizing..')
     run = [0]
 
-    while run[0] <= num_steps
+    while run[0] <= num_steps:
+
         def closure():
             # correct the values of updated input image
             input_img.data.clamp_(0, 1)
