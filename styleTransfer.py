@@ -13,9 +13,10 @@ import scipy.misc
 import imageio
 import os
 import time
+import skimage.io
 
+ttt = time.time()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 # desired size of the output image
 imsize = [512 if torch.cuda.is_available() else 128]  # use small size if no gpu
 
@@ -31,7 +32,7 @@ print(parser.parse_args())
 parser: argparse.Namespace = parser.parse_args()
 
 imsize = (parser.size)  # [0]
-style_name = parser.style
+# style_name = parser.style
 content_name = parser.content
 init_image = parser.init
 num_steps = parser.steps
@@ -42,43 +43,7 @@ savesteps = parser.savesteps
 The code below loads all the required images.
 """
 
-print("size: {}".format(imsize))
-if len(imsize) > 1:
-    loader = transforms.Compose([
-        transforms.Resize((imsize[0], imsize[1])),  # scale imported image to squared image
-        transforms.ToTensor()])  # transform it into a torch tensor
-    imsize_name = "{}_{}".format(imsize[0], imsize[1])
-else:
-    loader = transforms.Compose([
-        transforms.Resize((imsize[0], imsize[0])),  # scale imported image to squared image
-        transforms.ToTensor()])  # transform it into a torch tensor
-    imsize_name = "{}".format(imsize[0])
 
-
-def image_loader(image_name):
-    image = Image.open(image_name)
-    # fake batch dimension required to fit network's input dimensions
-    image = loader(image).unsqueeze(0)
-
-    return image.to(device, torch.float)
-
-
-style_img = image_loader("./images/{}".format(style_name))
-content_img = image_loader("./images/{}".format(content_name))
-
-#initilazation image
-input_img = content_img.clone()
-
-print(content_name,style_name)
-print(style_img.size(),content_img.size())
-
-
-
-# assert style_img.size() == content_img.size()
-
-
-
-unloader = transforms.ToPILImage()  # reconvert into PIL image
 
 
 
@@ -124,10 +89,7 @@ class StyleLoss(nn.Module):
 
 
 
-cnn = models.vgg19(pretrained=True).features.to(device).eval()
 
-cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
-cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
 
 # create a module to normalize input image so we can easily put it in a
 # nn.Sequential
@@ -228,13 +190,14 @@ def saveimage(tensor,save_name="test"):
     Keyword Arguments:
         save_name {str} -- name of the file  (default: {"test"})
     """
-    if os.path.exists('output/{}.png'.format(save_name)):
+    folder = "nish_output_texture"
+    if os.path.exists('output/{}/{}.jpg'.format(folder, save_name)):
         i = 0
-        while os.path.exists('output/{}-{:d}.png'.format(save_name, i)):
+        while os.path.exists('output/{}/{}-{:d}.jpg'.format(folder,save_name, i)):
             i += 1
-        save_name = 'output/{}-{:d}.png'.format(save_name, i)
+        save_name = 'output/{}/{}-{:d}.jpg'.format(folder,save_name, i)
     else:
-        save_name = "output/{}.png".format(save_name)
+        save_name = "output/{}/{}.jpg".format(folder,save_name)
     image = tensor.cpu().clone()  # we clone the tensor to not do changes on it
     image = image.squeeze(0)      # remove the fake batch dimension
     #print(image2.detach().numpy())
@@ -255,7 +218,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 
     print('Optimizing..')
     run = [0]
-
+    start_time = time.time()
     while run[0] <= num_steps:
 
         def closure():
@@ -294,10 +257,78 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     return input_img
 
 
-# Run the Algorithm
-output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std,
-                            content_img, style_img, input_img,num_steps=num_steps)
 
-##save output
-save_name="stylized-{}-{}-{}".format(content_name,style_name,imsize_name)
-saveimage(output, save_name)
+
+print("size: {}".format(imsize))
+if len(imsize) > 1:
+    loader = transforms.Compose([
+        transforms.Resize((imsize[0], imsize[1])),  # scale imported image to squared image
+        transforms.ToTensor()])  # transform it into a torch tensor
+    imsize_name = "{}_{}".format(imsize[0], imsize[1])
+else:
+    loader = transforms.Compose([
+        transforms.Resize((imsize[0], imsize[0])),  # scale imported image to squared image
+        transforms.ToTensor()])  # transform it into a torch tensor
+    imsize_name = "{}".format(imsize[0])
+
+
+def image_loader(image_name):
+    image = Image.open(image_name)
+    # fake batch dimension required to fit network's input dimensions
+    image = loader(image).unsqueeze(0)
+
+    return image.to(device, torch.float)
+
+
+lim = 1
+train_set = skimage.io.imread('NaturePaperDataUpl/ISBI2012/raw_train.tif')[0:lim]
+tttt = time.time()
+for num_steps in [75, 150, 250]:
+
+    for j in range(lim):
+        
+        train = train_set[j] / 255
+        train = torch.tensor(train)
+        print(train.shape)
+        content_img = train.reshape(1,1,512,512)
+        content_img = content_img.to(device, torch.float)
+        content_name = "train{}".format(j)
+
+        for i in range(30):
+
+            style_name = "style{}".format(i)
+            style_img = image_loader("./images/styles/styles_texture/{}.jpg".format(style_name))
+
+            #initilazation image
+            input_img = content_img.clone()
+
+            print(content_name,style_name)
+            print(style_img.size(),content_img.size())
+
+
+
+            # assert style_img.size() == content_img.size()
+
+
+
+            unloader = transforms.ToPILImage()  # reconvert into PIL image
+
+
+            cnn = models.vgg19(pretrained=True).features.to(device).eval()
+
+            cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
+            cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
+
+
+            # Run the Algorithm
+            output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std,
+                                        content_img, style_img, input_img,num_steps=num_steps)
+
+            ##save output
+            save_name="stylized-{}-{}-{}".format(content_name,style_name,num_steps)
+            saveimage(output, save_name)
+            print(time.time() - ttt)
+            flag = next(cnn.parameters()).is_cuda
+            print(flag)
+
+print(time.time() - tttt)
