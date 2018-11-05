@@ -25,5 +25,5 @@ Dependencies:
 </div>
 
 <div align="center">
-<img src="images/stylize1.png" height="500px">
+<img src="images/stylize3.png" height="500px">
 </div>
