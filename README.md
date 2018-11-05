@@ -1,5 +1,5 @@
 # styleTransferNeuronSegment
-In this work I'll try to see if I can enhance Neuron Segmentation with producing images of the train set with different styles. A full report of the work can be found "[here](https://github.com/ahmadnish/styleTransferNeuronSegment/blob/master/tex/report.pdf)".
+In this work I'll try to see if I can enhance Neuron Segmentation with producing images of the train set with different styles. A full report of the work can be found "[here](https://github.com/ahmadnish/styleTransferNeuronSegment/raw/master/tex/report.pdf)".
 
 ## Setup
 
