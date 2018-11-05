@@ -17,13 +17,13 @@ Dependencies:
 ### Artistic Style Transfer
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/ahmadnish/styleTransferNeuronSegment/blob/master/images/stylize1.png" height="200px">
+<img src="images/stylize1.png" height="200px">
 </div>
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/ahmadnish/styleTransferNeuronSegment/blob/master/images/stylize2.png" height="200px">
+<img src="images/stylize2.png" height="200px">
 </div>
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/ahmadnish/styleTransferNeuronSegment/blob/master/images/stylize1.png" height="200px">
+<img src="images/stylize1.png" height="200px">
 </div>
